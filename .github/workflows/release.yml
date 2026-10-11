@@ -16,8 +16,16 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
       - run: cargo test --release
 
-  build:
+  create-release:
     needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: taiki-e/create-gh-release-action@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+  build:
+    needs: create-release
     strategy:
       matrix:
         target:
