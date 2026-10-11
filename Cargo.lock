@@ -21,6 +21,7 @@ dependencies = [
  "cfg-if",
  "cipher",
  "cpufeatures",
+ "zeroize",
 ]
 
 [[package]]
@@ -35,6 +36,7 @@ dependencies = [
  "ctr",
  "ghash",
  "subtle",
+ "zeroize",
 ]
 
 [[package]]
@@ -382,14 +384,16 @@ dependencies = [
 
 [[package]]
 name = "sshseal"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
+ "aes",
  "aes-gcm",
  "base64",
  "ed25519-dalek",
  "getrandom",
  "hkdf",
  "sha2",
+ "zeroize",
 ]
 
 [[package]]

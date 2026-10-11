@@ -4,6 +4,7 @@ use aes_gcm::aead::{Aead, KeyInit};
 use aes_gcm::{Aes256Gcm, Nonce};
 use hkdf::Hkdf;
 use sha2::Sha256;
+use zeroize::Zeroizing;
 
 const MAGIC: [u8; 4] = *b"SSE1";
 pub const NONCE_LEN: usize = 32;
@@ -38,8 +39,8 @@ impl Header {
 /// whether an agent holding the matching private key is willing to sign.
 fn derive(signature: &[u8]) -> (Aes256Gcm, [u8; 12]) {
     let hkdf = Hkdf::<Sha256>::new(None, signature);
-    let mut okm = [0u8; 44];
-    hkdf.expand(b"sshseal-v1", &mut okm)
+    let mut okm = Zeroizing::new([0u8; 44]);
+    hkdf.expand(b"sshseal-v1", &mut okm[..])
         .expect("44 bytes is within HKDF-SHA256's output limit");
     let cipher = Aes256Gcm::new_from_slice(&okm[..32]).expect("okm[..32] is exactly 32 bytes");
     (cipher, okm[32..].try_into().unwrap())

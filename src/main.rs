@@ -5,6 +5,7 @@ use std::io::{self, Read, Write};
 use std::process::ExitCode;
 
 use agent::{Client, Identity};
+use zeroize::Zeroizing;
 
 fn cmd_identities() -> io::Result<()> {
     let mut client = Client::connect()?;
@@ -64,7 +65,7 @@ fn cmd_encrypt(requested: Option<&str>) -> io::Result<()> {
     let mut nonce = [0u8; crypto::NONCE_LEN];
     getrandom::getrandom(&mut nonce).map_err(|e| io::Error::other(e.to_string()))?;
 
-    let signature = client.sign(&identity.key_blob, &nonce)?;
+    let signature = Zeroizing::new(client.sign(&identity.key_blob, &nonce)?);
     let ciphertext = crypto::seal(&plaintext, &signature);
 
     let mut blob = Vec::new();
@@ -90,7 +91,7 @@ fn cmd_decrypt() -> io::Result<()> {
         .find(|id| id.fingerprint_digest() == header.fingerprint)
         .ok_or_else(|| io::Error::new(io::ErrorKind::NotFound, "required key is not loaded in ssh-agent"))?;
 
-    let signature = client.sign(&identity.key_blob, &header.nonce)?;
+    let signature = Zeroizing::new(client.sign(&identity.key_blob, &header.nonce)?);
     let plaintext = crypto::unseal(ciphertext, &signature)?;
     io::stdout().write_all(&plaintext)
 }
